@@ -1,0 +1,112 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+# Si el mismo issue se edita otra vez mientras corre un triage, cancela el run en
+# vuelo en lugar de apilar otro. Controla costo ante ediciones rápidas.
+concurrency:
+  group: claude-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    # No reaccionar a ediciones hechas por bots (incl. github-actions[bot]); junto con
+    # la regla de GitHub "eventos de bots no disparan workflows" evita loops.
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # clonar y leer game.js / index.html / style.css para diagnosticar
+      issues: write    # requerido para añadir labels Y publicar el comentario
+      id-token: write  # coincide con los workflows existentes
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Triage issue with Claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Autentica el CLI `gh` dentro del Bash de Claude.
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Herramientas de lectura para diagnosticar + subcomandos gh acotados para
+          # etiquetar/comentar. Sin Edit/Write/git => Claude no puede alterar código.
+          claude_args: |
+            --allowed-tools "Read,Glob,Grep,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*)"
+            --max-turns 15
+
+          prompt: |
+            You are triaging GitHub issue #${{ github.event.issue.number }} in the
+            repository ${{ github.repository }} (a small vanilla-JavaScript Tetris
+            game: all logic in `game.js`, DOM/canvas in `index.html`, styling in
+            `style.css`; see `CLAUDE.md` and `README.md` for architecture).
+
+            ## Step 1 — Read the issue
+            Run: gh issue view ${{ github.event.issue.number }} --json title,body,author,labels,comments
+            Detect the natural language of the title/body. You MUST write your
+            comment in that same language (e.g. if the issue is in Spanish,
+            respond in Spanish).
+
+            ## Step 2 — Investigate the codebase
+            Using Read/Glob/Grep, inspect the files relevant to the report. Map the
+            reported behavior to concrete functions/lines in `game.js` (e.g.
+            collision `collide`, rotation `tryRotate`/`rotateCW`, line clears
+            `clearLines`, scoring/leveling, the game loop `loop`, rendering `draw`),
+            or to `index.html`/`style.css` for layout/visual issues. Do NOT modify
+            any files — this is analysis only.
+
+            ## Step 3 — Choose and apply labels
+            Choose labels ONLY from this exact existing set (do not invent new ones):
+            bug, documentation, duplicate, enhancement, good first issue,
+            help wanted, invalid, question, wontfix.
+            Pick the 1–3 that genuinely fit. Guidance: a defect/incorrect behavior =
+            `bug`; a feature/change request = `enhancement`; a docs/README problem =
+            `documentation`; a usage/how-to question = `question`; not reproducible /
+            not enough info / spam = `invalid`; a small, well-scoped fix newcomers
+            could take = also add `good first issue`.
+            Apply them (quote labels that contain spaces):
+              gh issue edit ${{ github.event.issue.number }} --add-label "bug"
+            You may pass several at once: --add-label "bug,good first issue".
+            Only ADD labels; never remove labels a human already set.
+
+            ## Step 4 — Post ONE structured diagnosis comment (idempotent)
+            Re-read the existing comments from Step 1. If one of YOUR previous comments
+            already contains the marker line "<!-- claude-triage -->", UPDATE that same
+            comment instead of creating a new one:
+              gh issue comment ${{ github.event.issue.number }} --edit-last --body "<updated text>"
+            Only use --edit-last if your marked diagnosis is your most recent comment;
+            otherwise create a new comment:
+              gh issue comment ${{ github.event.issue.number }} --body "<text>"
+
+            The comment body MUST begin with the exact marker line "<!-- claude-triage -->"
+            (an HTML comment; invisible in the rendered issue) followed by a blank line,
+            then this Markdown structure (translate the headings into the issue's language):
+
+            <!-- claude-triage -->
+            ## Diagnosis (automated triage)
+
+            ### Summary
+            One or two sentences restating the problem/request in your own words.
+
+            ### Affected areas & files
+            Bullet list of the files and specific functions/lines most likely involved
+            (e.g. `game.js` → `clearLines()`), with a short note on why each is relevant.
+
+            ### Root-cause hypothesis
+            Your best explanation of the underlying cause (or, for a feature request,
+            what is currently missing). Say clearly if this is a guess.
+
+            ### Suggested implementation approach
+            A concrete, ordered outline a developer (or a follow-up Claude run) could
+            implement. Reference existing helpers/constants to keep the fix idiomatic.
+
+            ### Open questions
+            Anything you need from the reporter to proceed, or "None" if clear.
+
+            Keep it concise and technical. Close with the labels you applied and one line
+            noting this is an automated triage, not a final fix.
