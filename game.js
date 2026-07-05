@@ -258,6 +258,7 @@ function loop(ts) {
     }
   }
   draw();
+  if (gameOver) return; // stop the loop once the game has ended
   animId = requestAnimationFrame(loop);
 }
 
