@@ -81,22 +81,29 @@ body {
 
 .theme-toggle {
   background: var(--board-bg);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  font-family: 'Courier New', Courier, monospace;
   font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .theme-toggle:hover {
   border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-shadow);
   transform: scale(1.05);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
 }
 
 .game-container {
