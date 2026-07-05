@@ -323,6 +323,9 @@ function init() {
 }
 
 document.addEventListener('keydown', e => {
+  // let a focused <select> handle its own Escape (e.g. closing a native
+  // dropdown) instead of also toggling the whole pause menu underneath it
+  if (e.code === 'Escape' && e.target === startLevelSelect) return;
   if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
