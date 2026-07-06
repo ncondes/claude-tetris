@@ -207,7 +207,8 @@ kbd {
   align-items: center;
 }
 
-#overlay-title {
+#overlay-title,
+#pause-title {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 4px;
@@ -271,4 +272,75 @@ body.skin-neon #next-canvas {
 body.skin-neon.light-theme {
   --grid-color: #1a1a2e;
   --highlight-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ---- Pause menu ---- */
+.pause-box {
+  min-width: 240px;
+}
+
+.pause-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pause-btn {
+  background: var(--restart-bg);
+  color: var(--restart-text);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.pause-btn:hover {
+  background: var(--restart-hover);
+}
+
+.pause-controls-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.pause-controls-list.hidden {
+  display: none;
+}
+
+.pause-controls-list li {
+  font-size: 12px;
+  color: var(--control-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pause-level-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--label-color);
+  letter-spacing: 1px;
+}
+
+.pause-level-select select {
+  background: var(--kbd-bg);
+  color: var(--kbd-text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
 }

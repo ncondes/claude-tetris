@@ -70,8 +70,16 @@ const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle.querySelector('.theme-icon');
 const skinSelect = document.getElementById('skin-select');
 
+const pauseMenu = document.getElementById('pause-menu');
+const resumeBtn = document.getElementById('resume-btn');
+const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const toggleControlsBtn = document.getElementById('toggle-controls-btn');
+const pauseControlsList = document.getElementById('pause-controls-list');
+const startLevelSelect = document.getElementById('start-level-select');
+
 const THEME_KEY = 'tetris-theme';
 const SKIN_KEY = 'tetris-skin';
+const START_LEVEL_KEY = 'tetris-start-level';
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let rewardPending;
@@ -376,13 +384,17 @@ function togglePause() {
   if (gameOver) return;
   paused = !paused;
   if (!paused) {
+    // avoid a lingering focused control inside the pause menu from
+    // reacting to a stray Space/Enter keypress once gameplay resumes
+    if (document.activeElement && pauseMenu.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+    pauseMenu.classList.add('hidden');
     lastTime = performance.now();
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+    pauseMenu.classList.remove('hidden');
   }
 }
 
@@ -404,26 +416,31 @@ function loop(ts) {
 }
 
 function init() {
+  const startLevel = parseInt(startLevelSelect.value, 10) || 1;
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startLevel;
   paused = false;
   gameOver = false;
   rewardPending = false;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (startLevel - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  pauseMenu.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  // let a focused <select> handle its own Escape (e.g. closing a native
+  // dropdown) instead of also toggling the whole pause menu underneath it
+  if (e.code === 'Escape' && e.target === startLevelSelect) return;
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -448,6 +465,41 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+resumeBtn.addEventListener('click', () => {
+  resumeBtn.blur();
+  if (paused) togglePause();
+});
+
+pauseRestartBtn.addEventListener('click', () => {
+  pauseRestartBtn.blur();
+  init();
+});
+
+toggleControlsBtn.addEventListener('click', () => {
+  toggleControlsBtn.blur();
+  pauseControlsList.classList.toggle('hidden');
+});
+
+function loadStartLevel() {
+  try {
+    const stored = parseInt(localStorage.getItem(START_LEVEL_KEY), 10);
+    if (Number.isInteger(stored) && stored >= 1 && stored <= 10) return stored;
+  } catch (e) {
+    // localStorage unavailable (private mode, disabled, etc.) — fall back to default
+  }
+  return 1;
+}
+
+startLevelSelect.value = String(loadStartLevel());
+
+startLevelSelect.addEventListener('change', () => {
+  try {
+    localStorage.setItem(START_LEVEL_KEY, startLevelSelect.value);
+  } catch (e) {
+    // ignore persistence failures
+  }
+});
 
 function readThemeColors() {
   const styles = getComputedStyle(document.body);
