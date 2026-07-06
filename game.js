@@ -38,6 +38,9 @@ const PIECES = [
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+const MIN_START_LEVEL = 1;
+const MAX_START_LEVEL = 10; // la velocidad se satura en nivel 11 (dropInterval = 100ms)
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
@@ -49,6 +52,14 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const pauseMenu = document.getElementById('pause-menu');
+const resumeBtn = document.getElementById('resume-btn');
+const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const levelValueEl = document.getElementById('start-level-value');
+const levelDownBtn = document.getElementById('level-down');
+const levelUpBtn = document.getElementById('level-up');
+const controlsToggle = document.getElementById('controls-toggle');
+const controlsList = document.getElementById('pause-controls');
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle.querySelector('.theme-icon');
 
@@ -57,6 +68,7 @@ const THEME_KEY = 'tetris-theme';
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let rewardPending;
 let gridColor, highlightColor;
+let startLevel = 1; // nivel con el que empezará la próxima partida; no lo resetea init()
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -132,7 +144,7 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
+    level = Math.floor(lines / 10) + startLevel;
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     if (cleared === 4) rewardPending = true; // Tetris: recompensa = pieza 1x1
     updateHUD();
@@ -259,17 +271,49 @@ function endGame() {
 }
 
 function togglePause() {
-  if (gameOver) return;
-  paused = !paused;
-  if (!paused) {
-    lastTime = performance.now();
-    loop(lastTime);
-  } else {
-    cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+  if (gameOver) return; // pausa bloqueada en game over
+  if (paused) closePauseMenu();
+  else openPauseMenu();
+}
+
+function openPauseMenu() {
+  paused = true;
+  cancelAnimationFrame(animId);
+  updateLevelDisplay();
+  collapseControls();
+  pauseMenu.classList.remove('hidden');
+  resumeBtn.focus();
+}
+
+function closePauseMenu() {
+  pauseMenu.classList.add('hidden');
+  paused = false;
+  if (document.activeElement && document.activeElement.blur) {
+    document.activeElement.blur();
   }
+  lastTime = performance.now(); // evita un dt gigante en loop() tras la pausa
+  animId = requestAnimationFrame(loop);
+}
+
+function updateLevelDisplay() {
+  levelValueEl.textContent = startLevel;
+}
+
+function changeStartLevel(delta) {
+  startLevel = Math.min(MAX_START_LEVEL, Math.max(MIN_START_LEVEL, startLevel + delta));
+  updateLevelDisplay();
+}
+
+function collapseControls() {
+  controlsList.classList.add('hidden');
+  controlsToggle.setAttribute('aria-expanded', 'false');
+  controlsToggle.textContent = 'Ver controles';
+}
+
+function toggleControls() {
+  const isHidden = controlsList.classList.toggle('hidden');
+  controlsToggle.setAttribute('aria-expanded', String(!isHidden));
+  controlsToggle.textContent = isHidden ? 'Ver controles' : 'Ocultar controles';
 }
 
 function loop(ts) {
@@ -293,23 +337,28 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startLevel;
   paused = false;
   gameOver = false;
   rewardPending = false;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  pauseMenu.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
+  // Space is always reserved for hard drop: prevent it here (before the paused
+  // gate below) so it can't also fire a native click on a focused pause-menu
+  // button (e.g. Reanudar), which would silently close the menu.
+  if (e.code === 'Space') e.preventDefault();
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -326,7 +375,6 @@ document.addEventListener('keydown', e => {
       tryRotate();
       break;
     case 'Space':
-      e.preventDefault();
       hardDrop();
       break;
   }
@@ -334,6 +382,11 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+resumeBtn.addEventListener('click', closePauseMenu);
+pauseRestartBtn.addEventListener('click', init);
+levelDownBtn.addEventListener('click', () => changeStartLevel(-1));
+levelUpBtn.addEventListener('click', () => changeStartLevel(1));
+controlsToggle.addEventListener('click', toggleControls);
 
 function readThemeColors() {
   const styles = getComputedStyle(document.body);

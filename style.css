@@ -220,8 +220,7 @@ kbd {
   color: var(--accent);
 }
 
-#restart-btn {
-  margin-top: 8px;
+.menu-btn {
   background: var(--restart-bg);
   color: var(--restart-text);
   border: none;
@@ -231,9 +230,98 @@ kbd {
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 1px;
-  transition: background 0.15s;
+  min-width: 180px;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-#restart-btn:hover {
+.menu-btn:hover {
   background: var(--restart-hover);
+}
+
+.menu-btn-ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--border);
+}
+
+.menu-btn-ghost:hover {
+  background: var(--board-bg);
+  border-color: var(--accent);
+}
+
+/* ---- Menú de pausa ---- */
+.menu-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  color: var(--accent);
+}
+
+.level-stepper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stepper-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: var(--board-bg);
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.stepper-btn:hover {
+  border-color: var(--accent);
+}
+
+.stepper-btn:active {
+  transform: scale(0.92);
+}
+
+.stepper-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 2ch;
+  text-align: center;
+}
+
+.pause-controls {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pause-controls li {
+  font-size: 12px;
+  color: var(--control-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pause-controls.hidden {
+  display: none;
 }
