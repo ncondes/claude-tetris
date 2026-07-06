@@ -25,7 +25,9 @@
   --restart-hover: #9bbdff;
 }
 
-body.light-theme {
+/* ---- Skin Retro ---- */
+/* Oscuro = valores de :root (sin override). Claro = paleta parchment original. */
+body.skin-retro.light-theme {
   --bg: #eae3d0;
   --text: #2e2a1f;
   --accent: #b3423f;
@@ -44,6 +46,135 @@ body.light-theme {
   --restart-bg: #3a6ea5;
   --restart-text: #f7f2e3;
   --restart-hover: #5b8ec7;
+}
+
+/* ---- Skin Neon ---- */
+body.skin-neon {
+  --bg: #000000;
+  --text: #e0fbff;
+  --accent: #00e5ff;
+  --accent-shadow: rgba(0, 229, 255, 0.6);
+  --board-bg: #000000;
+  --border: #003b40;
+  --label-color: #00838f;
+  --control-text: #4dd0e1;
+  --kbd-bg: #001f22;
+  --kbd-border: #00575e;
+  --kbd-text: #4dd0e1;
+  --overlay-bg: rgba(0, 0, 0, 0.85);
+  --overlay-title: #ff1744;
+  --grid-color: rgba(0, 229, 255, 0.08);
+  --highlight-color: rgba(255, 255, 255, 0.35);
+  --restart-bg: #00e5ff;
+  --restart-text: #001014;
+  --restart-hover: #62f3ff;
+}
+
+body.skin-neon.light-theme {
+  --bg: #0d1b2a;
+  --text: #eafcff;
+  --accent: #00b8d4;
+  --accent-shadow: rgba(0, 184, 212, 0.45);
+  --board-bg: #0a1622;
+  --border: #163044;
+  --label-color: #4fc3d9;
+  --control-text: #7fd8e8;
+  --kbd-bg: #12283a;
+  --kbd-border: #24445c;
+  --kbd-text: #bdeef7;
+  --overlay-bg: rgba(13, 27, 42, 0.85);
+  --overlay-title: #ff5f7a;
+  --grid-color: rgba(0, 184, 212, 0.12);
+  --highlight-color: rgba(255, 255, 255, 0.25);
+  --restart-bg: #00b8d4;
+  --restart-text: #052027;
+  --restart-hover: #3fd4ec;
+}
+
+/* ---- Skin Pastel ---- */
+body.skin-pastel {
+  --bg: #2b2733;
+  --text: #f0e9f5;
+  --accent: #c9a6e0;
+  --accent-shadow: rgba(201, 166, 224, 0.4);
+  --board-bg: #34303e;
+  --border: #4a4456;
+  --label-color: #9a8fae;
+  --control-text: #b5abc4;
+  --kbd-bg: #3c3748;
+  --kbd-border: #524b62;
+  --kbd-text: #cfc4dc;
+  --overlay-bg: rgba(43, 39, 51, 0.85);
+  --overlay-title: #f7b2b7;
+  --grid-color: #3f3a4a;
+  --highlight-color: rgba(255, 255, 255, 0.18);
+  --restart-bg: #c9a6e0;
+  --restart-text: #2b2733;
+  --restart-hover: #dcc2ee;
+}
+
+body.skin-pastel.light-theme {
+  --bg: #fdf6f0;
+  --text: #4a4056;
+  --accent: #b48ecf;
+  --accent-shadow: rgba(180, 142, 207, 0.3);
+  --board-bg: #ffffff;
+  --border: #e8d8ee;
+  --label-color: #b3a3c2;
+  --control-text: #8a7f97;
+  --kbd-bg: #f3e9f7;
+  --kbd-border: #ddc9e6;
+  --kbd-text: #7a6d8a;
+  --overlay-bg: rgba(253, 246, 240, 0.85);
+  --overlay-title: #e08a95;
+  --grid-color: #f0e4f5;
+  --highlight-color: rgba(255, 255, 255, 0.6);
+  --restart-bg: #b48ecf;
+  --restart-text: #ffffff;
+  --restart-hover: #c7a6dd;
+}
+
+/* ---- Skin Pixel Art ---- */
+body.skin-pixel {
+  --bg: #0a0a0a;
+  --text: #d0d0d0;
+  --accent: #ffca28;
+  --accent-shadow: rgba(255, 202, 40, 0.4);
+  --board-bg: #141414;
+  --border: #333333;
+  --label-color: #666666;
+  --control-text: #999999;
+  --kbd-bg: #1c1c1c;
+  --kbd-border: #3a3a3a;
+  --kbd-text: #bbbbbb;
+  --overlay-bg: rgba(0, 0, 0, 0.85);
+  --overlay-title: #ff5252;
+  --grid-color: #1f1f1f;
+  --highlight-color: rgba(255, 255, 255, 0.15);
+  --restart-bg: #ffca28;
+  --restart-text: #0a0a0a;
+  --restart-hover: #ffd95e;
+}
+
+body.skin-pixel.light-theme {
+  --bg: #e8e8e8;
+  --text: #202020;
+  --accent: #d17c00;
+  --accent-shadow: rgba(209, 124, 0, 0.3);
+  --board-bg: #f5f5f5;
+  --border: #b0b0b0;
+  --label-color: #808080;
+  --control-text: #606060;
+  --kbd-bg: #dcdcdc;
+  --kbd-border: #b0b0b0;
+  --kbd-text: #404040;
+  --overlay-bg: rgba(232, 232, 232, 0.85);
+  --overlay-title: #c0392b;
+  --grid-color: #d8d8d8;
+  --highlight-color: rgba(255, 255, 255, 0.5);
+  --restart-bg: #d17c00;
+  --restart-text: #ffffff;
+  --restart-hover: #e8940f;
 }
 
 body {
@@ -155,6 +286,25 @@ body {
   border: 1px solid var(--border);
   background: var(--board-bg);
   border-radius: 4px;
+}
+
+#skin-select {
+  background: var(--board-bg);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+#skin-select:hover,
+#skin-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-shadow);
+  outline: none;
 }
 
 /* ---- Controles ---- */
