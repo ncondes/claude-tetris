@@ -237,3 +237,38 @@ kbd {
 #restart-btn:hover {
   background: var(--restart-hover);
 }
+
+/* ---- Selector de skin ---- */
+.skin-select {
+  background: var(--kbd-bg);
+  color: var(--text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.skin-select:hover {
+  border-color: var(--accent);
+}
+
+.skin-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent-shadow);
+}
+
+/* ---- Skins visuales ---- */
+/* Neon: el tablero fuerza fondo oscuro independientemente del tema claro/oscuro. */
+body.skin-neon #board,
+body.skin-neon #next-canvas {
+  background: #05050a;
+}
+
+body.skin-neon.light-theme {
+  --grid-color: #1a1a2e;
+  --highlight-color: rgba(255, 255, 255, 0.18);
+}
