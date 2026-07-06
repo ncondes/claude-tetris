@@ -20,6 +20,30 @@ const COLORS = [
   '#90a4ae', // hueco 3x3 (reto) - gris acero
 ];
 
+// Paleta skin Neon: colores saturados/brillantes para el glow con shadowBlur
+const NEON_COLORS = [
+  null,
+  '#00e5ff', '#ffea00', '#d500f9', '#00e676', '#ff1744', '#2979ff', '#ff9100',
+  '#ff4081', '#1de9b6', '#c6ff00', '#ffffff', '#b0bec5',
+];
+
+// Paleta skin Pastel: colores suaves
+const PASTEL_COLORS = [
+  null,
+  '#a0e7e5', '#ffe5a0', '#d3b5e5', '#b5e7c8', '#f7b2b7', '#b5c7f7', '#ffd8a8',
+  '#f7c8dd', '#a8e0d8', '#e2edb0', '#fdfdfd', '#cfd8dc',
+];
+
+// Registro de skins: cada uno combina una paleta de color con una función de
+// dibujo de bloque (renderFlat/renderGlow/renderRounded/renderPixel, más abajo).
+// colorsLight es opcional: solo si un skin necesita una paleta distinta en modo claro.
+const SKINS = {
+  retro: { colors: COLORS, renderBlock: renderFlat },
+  neon: { colors: NEON_COLORS, renderBlock: renderGlow },
+  pastel: { colors: PASTEL_COLORS, renderBlock: renderRounded },
+  pixel: { colors: COLORS, renderBlock: renderPixel },
+};
+
 const PIECES = [
   null,
   [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
@@ -51,12 +75,15 @@ const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle.querySelector('.theme-icon');
+const skinSelect = document.getElementById('skin-select');
 
 const THEME_KEY = 'tetris-theme';
+const SKIN_KEY = 'tetris-skin';
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let rewardPending;
 let gridColor, highlightColor;
+let currentSkin, currentMode;
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -190,14 +217,83 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const skin = SKINS[currentSkin];
+  const palette = (currentMode === 'light' && skin.colorsLight) || skin.colors;
+  const color = palette[colorIndex];
   context.globalAlpha = alpha ?? 1;
+  skin.renderBlock(context, x * size, y * size, size, color);
+  context.globalAlpha = 1;
+}
+
+// -- Renderers de bloque por skin --
+// Firma común: (context, px, py, size, color) donde px/py es la esquina
+// superior izquierda en píxeles. Cada uno restaura cualquier estado de ctx
+// que modifique (sobre todo shadowBlur).
+
+function renderFlat(context, px, py, size, color) {
   context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+  context.fillRect(px + 1, py + 1, size - 2, size - 2);
   // highlight
   context.fillStyle = highlightColor;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
-  context.globalAlpha = 1;
+  context.fillRect(px + 1, py + 1, size - 2, 4);
+}
+
+function renderGlow(context, px, py, size, color) {
+  context.shadowColor = color;
+  context.shadowBlur = size * 0.4;
+  context.fillStyle = color;
+  context.fillRect(px + 2, py + 2, size - 4, size - 4);
+  context.shadowBlur = 0;
+  context.fillStyle = highlightColor;
+  context.fillRect(px + 3, py + 3, size - 6, 3);
+}
+
+function roundRectPath(context, x, y, w, h, r) {
+  context.beginPath();
+  context.moveTo(x + r, y);
+  context.lineTo(x + w - r, y);
+  context.arcTo(x + w, y, x + w, y + r, r);
+  context.lineTo(x + w, y + h - r);
+  context.arcTo(x + w, y + h, x + w - r, y + h, r);
+  context.lineTo(x + r, y + h);
+  context.arcTo(x, y + h, x, y + h - r, r);
+  context.lineTo(x, y + r);
+  context.arcTo(x, y, x + r, y, r);
+  context.closePath();
+}
+
+function renderRounded(context, px, py, size, color) {
+  const inset = 2;
+  roundRectPath(context, px + inset, py + inset, size - inset * 2, size - inset * 2, 7);
+  context.fillStyle = color;
+  context.fill();
+  context.save();
+  context.clip();
+  context.fillStyle = highlightColor;
+  context.fillRect(px + inset, py + inset, size - inset * 2, 6);
+  context.restore();
+}
+
+function shade(hex, amt) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, Math.min(255, (num >> 16) + amt));
+  const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amt));
+  const b = Math.max(0, Math.min(255, (num & 0xff) + amt));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function renderPixel(context, px, py, size, color) {
+  const bevel = Math.max(2, Math.round(size * 0.1));
+  context.fillStyle = color;
+  context.fillRect(px + 1, py + 1, size - 2, size - 2);
+  // bevel claro arriba/izquierda
+  context.fillStyle = shade(color, 40);
+  context.fillRect(px + 1, py + 1, size - 2, bevel);
+  context.fillRect(px + 1, py + 1, bevel, size - 2);
+  // bevel oscuro abajo/derecha
+  context.fillStyle = shade(color, -40);
+  context.fillRect(px + 1, py + size - 1 - bevel, size - 2, bevel);
+  context.fillRect(px + size - 1 - bevel, py + 1, bevel, size - 2);
 }
 
 function drawGrid() {
@@ -335,27 +431,40 @@ document.addEventListener('keydown', e => {
 
 restartBtn.addEventListener('click', init);
 
-function readThemeColors() {
+function readSkinColors() {
   const styles = getComputedStyle(document.body);
   gridColor = styles.getPropertyValue('--grid-color').trim();
   highlightColor = styles.getPropertyValue('--highlight-color').trim();
 }
 
-function applyTheme(theme) {
-  document.body.classList.toggle('light-theme', theme === 'light');
-  themeIcon.textContent = theme === 'light' ? '☀' : '🌙';
-  readThemeColors();
+// Aplica los dos ejes de apariencia (skin + modo claro/oscuro) al DOM y
+// repinta si ya hay una partida en curso.
+function applyAppearance() {
+  Object.keys(SKINS).forEach(s =>
+    document.body.classList.toggle('skin-' + s, s === currentSkin));
+  document.body.classList.toggle('light-theme', currentMode === 'light');
+  skinSelect.value = currentSkin;
+  themeIcon.textContent = currentMode === 'light' ? '☀' : '🌙';
+  readSkinColors();
   if (board) draw();
+  if (next) drawNext();
 }
 
-function toggleTheme() {
-  const newTheme = document.body.classList.contains('light-theme') ? 'dark' : 'light';
-  localStorage.setItem(THEME_KEY, newTheme);
-  applyTheme(newTheme);
-}
+skinSelect.addEventListener('change', () => {
+  currentSkin = SKINS[skinSelect.value] ? skinSelect.value : 'retro';
+  localStorage.setItem(SKIN_KEY, currentSkin);
+  applyAppearance();
+});
 
-themeToggle.addEventListener('click', toggleTheme);
+themeToggle.addEventListener('click', () => {
+  currentMode = currentMode === 'light' ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, currentMode);
+  applyAppearance();
+});
 
-applyTheme(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
+const savedSkin = localStorage.getItem(SKIN_KEY);
+currentSkin = SKINS[savedSkin] ? savedSkin : 'retro';
+currentMode = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
+applyAppearance();
 
 init();
