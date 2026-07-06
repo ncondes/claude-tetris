@@ -344,3 +344,153 @@ body.skin-neon.light-theme {
   font-size: 13px;
   cursor: pointer;
 }
+
+.hidden {
+  display: none;
+}
+
+/* ---- Records / start screen ---- */
+.start-box {
+  width: 260px;
+}
+
+.start-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--accent);
+  text-shadow: 0 0 16px var(--accent-shadow);
+}
+
+.highscores-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.highscores-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+}
+
+.highscores-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.highscores-table td:last-child {
+  text-align: right;
+  color: var(--accent);
+}
+
+.highscores-empty {
+  text-align: center;
+  color: var(--control-text);
+  font-style: italic;
+}
+
+.highscore-new {
+  background: var(--accent-shadow);
+}
+
+.stats-section {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.start-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+#reset-scores-btn,
+#play-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+#play-btn {
+  background: var(--restart-bg);
+  color: var(--restart-text);
+}
+
+#play-btn:hover {
+  background: var(--restart-hover);
+}
+
+#reset-scores-btn {
+  background: transparent;
+  color: var(--control-text);
+  border: 1px solid var(--border);
+}
+
+#reset-scores-btn:hover {
+  border-color: var(--overlay-title);
+  color: var(--overlay-title);
+}
+
+/* ---- Highscore name entry (game over) ---- */
+#highscore-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+#highscore-entry p {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+#highscore-name-input {
+  background: var(--board-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+  text-align: center;
+  width: 160px;
+}
+
+#highscore-submit-btn {
+  background: var(--restart-bg);
+  color: var(--restart-text);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+#highscore-submit-btn:hover {
+  background: var(--restart-hover);
+}
